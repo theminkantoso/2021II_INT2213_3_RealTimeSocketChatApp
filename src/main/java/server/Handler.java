@@ -1,6 +1,6 @@
 package server;
 
-import client.ChatClient;
+import client.*;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
-import static client.ChatClient.users;
+
 
 /**
  * The client handler task.

@@ -1,6 +1,6 @@
 package client;
-import server.ChatServer;
-import server.Handler;
+import server.*;
+
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

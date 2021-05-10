@@ -210,7 +210,7 @@ public class ChatServer1 extends Application {
     used to create a multi-thread server serving
     a each socket in different thread.
      */
-    class ServerThread extends Thread {
+    public class ServerThread extends Thread {
         private ChatServer1 server;
         private Socket socket;
         String userName;    // Default null;
