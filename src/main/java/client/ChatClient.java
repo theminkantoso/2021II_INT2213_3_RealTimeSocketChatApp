@@ -111,7 +111,6 @@ public class ChatClient extends Application {
         Color titleColor = Color.web("#FF0000");
         l_labelTitle.setTextFill(titleColor);
 
-
         // Setting Prompt for user text field and area.
         nameInput.setPromptText("Enter your Nickname");
         messageInput.setPromptText("Enter your message");
@@ -448,7 +447,9 @@ public class ChatClient extends Application {
             String string = nameInput.getText().trim() + ": " +
                     messageInput.getText().trim();
             // Send the text to the server
-            dataOutputStream.writeUTF(string);
+            if(!messageInput.getText().trim().equals("")) {
+                dataOutputStream.writeUTF(string);
+            }
             messageInput.setText("");
         }
         catch (IOException ex) {
