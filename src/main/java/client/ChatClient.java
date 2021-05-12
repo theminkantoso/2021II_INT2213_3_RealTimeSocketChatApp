@@ -30,11 +30,11 @@ public class ChatClient extends Application {
     /*
     UI Labels
      */
-    Label l_usernameInput = new Label("Username");
-    Label l_messageArea = new Label("Chat Messages");
+    Label l_usernameInput = new Label("Nickname");
+    Label l_messageArea = new Label("Messages");
     Label l_labelTitle = new Label();
     Label l_labelMessages = new Label("User Message ");
-    Label l_activeUserList = new Label("Active User In System");
+    Label l_activeUserList = new Label("Active User In Chatroom");
     Label errorLabel = new Label("");
 
     /*
@@ -104,15 +104,16 @@ public class ChatClient extends Application {
          */
         BorderPane borderPane = new BorderPane();
         borderPane.setPadding(new Insets(10));
+        borderPane.setStyle("-fx-background-color: #F5F5DC");
 
-        l_labelTitle.setText("Real Time Chat App Room");
-        l_labelTitle.setFont(Font.font("Times New Roman", FontWeight.BOLD, 30));
-        Color titleColor = Color.web("#ca09e8");
+        l_labelTitle.setText("Chatroom Application");
+        l_labelTitle.setFont(Font.font("Times New Roman", FontWeight.BOLD, 35));
+        Color titleColor = Color.web("#FF0000");
         l_labelTitle.setTextFill(titleColor);
 
 
         // Setting Prompt for user text field and area.
-        nameInput.setPromptText("Enter your username");
+        nameInput.setPromptText("Enter your Nickname");
         messageInput.setPromptText("Enter your message");
 
         // Setting size of the compose text area. So, user can b_send
