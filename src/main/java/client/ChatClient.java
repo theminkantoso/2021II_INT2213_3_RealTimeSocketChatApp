@@ -116,16 +116,16 @@ public class ChatClient extends Application {
         nameInput.setPromptText("Enter your Nickname");
         messageInput.setPromptText("Enter your message");
 
-        // Setting size of the compose text area. So, user can b_send
-        // multiline messages.
+
         messageInput.setPrefHeight(2 * (nameInput.getHeight()));
         messageInput.setPrefWidth(250);
 
-        // Creating GridPane for the Center part of BorderPane.
+        // Creating GridPane for the Center part of BorderPane. This servers GUI purpose
         GridPane centreGridPane = new GridPane();
         centreGridPane.setPadding(new Insets(10));
         centreGridPane.setHgap(20);
         centreGridPane.setVgap(10);
+
         //Change font
         Font labelFonts = Font.font("Times New Roman", FontWeight.BOLD, 15);
         l_usernameInput.setFont(labelFonts);
@@ -159,7 +159,7 @@ public class ChatClient extends Application {
         VBox rightVBox = new VBox();
         rightVBox.setPadding(new Insets(20,0,10,0));
         rightVBox.setSpacing(10);
-        rightVBox.getChildren().addAll(l_activeUserList,userListView);
+        rightVBox.getChildren().addAll(l_activeUserList, userListView);
         borderPane.setRight(rightVBox);
 
 
@@ -192,18 +192,19 @@ public class ChatClient extends Application {
         primaryStage.show();    //Display Stage.
 
         /*
-         As socket need to be closed properly for the best
-         user experience of the application, it is made
-         sure that socket is closed when user close the
+         Make sure that socket is closed when user close the
          application.
          */
         primaryStage.setOnCloseRequest(t -> closeSocketExit());
-        //Send is disable until username is accepted.
+
+        /*
+        Disable sending anything until user input his or her username
+         */
         b_send.setDisable(true);
         b_sendFile.setDisable(true);
 
         // Setting listener for the buttons.
-        b_join.setOnAction(event -> joinChat());
+        b_join.setOnAction(event -> joinChatUsername());
         b_send.setOnAction(e -> process());
         b_exit.setOnAction(event -> closeSocketExit());
         b_sendFile.setOnAction(event-> {
@@ -214,25 +215,16 @@ public class ChatClient extends Application {
             }
         });
         try {
-            // Create a socket to connect to the server
             socket = new Socket(ChatServer.SERVER_IP, ChatServer.SERVER_PORT);
-
-            // Create an input stream to receive data from server.
-            dataInputStream =
-                    new DataInputStream(socket.getInputStream());
-
-            // Create an output stream to b_send data to the server
-            dataOutputStream =
-                    new DataOutputStream(socket.getOutputStream());
-
-            // Start a new thread for receiving messages
+            dataInputStream = new DataInputStream(socket.getInputStream());
+            dataOutputStream = new DataOutputStream(socket.getOutputStream());
             new Thread(() -> receiveMessages()).start();
         }
         // Providing feedback to user to notify connection issues.
         catch (IOException ex) {
             errorLabel.setTextFill(Color.RED);
-            errorLabel.setText("Unable to establish connection.");
-            System.err.println("Connection refused.");
+            errorLabel.setText("Unable to establish connection");
+            System.err.println("Connection refused");
         }
     }
 
@@ -241,34 +233,57 @@ public class ChatClient extends Application {
         File file;
         Stage stage = new Stage();
         while(true) {
+            /*
+            assing the selected file to the file variable
+             */
             file = fileChoose.showOpenDialog(stage);
             String fileName = file.getName();
+
+            /*
+            make sure only txt files are accepted
+             */
             String fileType = fileName.substring(fileName.length() - 3);
             if(fileType.equals("txt")) {
                 break;
             }
+            //alert user
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Wrong File");
+            alert.setHeaderText("Only txt text file!");
+            alert.setContentText("Please choose again!");
+
+            alert.showAndWait();
         }
         try {
-
             FileInputStream fileInputStreamFile = new FileInputStream(file.getAbsolutePath());
-
-            // Get the name of the file you want to b_send and store it in filename.
-
-            // Convert the name of the file into an array of bytes to be sent to the server.
+            //
+            /*
+            Convert the name of the file into an array of bytes to be sent to the server.
+             */
             byte[] fileNameBytes = file.getName().getBytes();
-            // Create a byte array the size of the file so don't b_send too little or too much data to the server.
+            /*
+             Create a byte array the size of the file so don't b_send too little or too much data to the server.
+             */
             byte[] fileBytes = new byte[(int) file.length()];
-            // Put the contents of the file into the array of bytes to be sent so these bytes can be sent to the server.
+            /*
+             Put the contents of the file into the array of bytes to be sent so these bytes can be sent to the server.
+             */
             fileInputStreamFile.read(fileBytes);
-            //Send mark message
-//            dataOutputStream.writeUTF("!@#$%^&*()");
-            // Send the length of the name of the file so server knows when to stop reading.
+            /*
+             Send the length of the name of the file so server knows when to stop reading.
+             */
             dataOutputStream.writeInt(fileNameBytes.length);
-            // Send the file name.
+            /*
+             Send the file name.
+             */
             dataOutputStream.write(fileNameBytes);
-            // Send the length of the byte array so the server knows when to stop reading.
+            /*
+             Send the length of the byte array so the server knows when to stop reading.
+             */
             dataOutputStream.writeInt(fileBytes.length);
-            // Send the actual file.
+            /*
+             Send the actual file.
+             */
             dataOutputStream.write(fileBytes);
 
         } catch (Exception e) {
@@ -276,58 +291,40 @@ public class ChatClient extends Application {
         }
     }
 
-
     /*
-    As socket need to be closed properly for the best user
-    experience of the application, this method is created to
-    make sure that the socket is closed and stage is closed
-    when this method is called.
+    Ensure closing all sockets
      */
     private void closeSocketExit() {
         try {
-            //If socket doesn't b_exit, no need to close.
+            //If socket doesn't exist, no need to close.
             if(socket != null){
                 socket.close();
             }
-            Platform.exit();    // Close UI.
+            Platform.exit();
         }
         catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-
     /*
-    This method receive message for server and read the
-    message to be displayed in proper place and relevant
-    information is shown to user. It can be related to
-    showing in errorLabel whether username has been
-    successfully added to server or whether the message
-    is to be displayed in user or chat list view.
+    Receive string from server to inputStream, then display the message
      */
     public void receiveMessages(){
         try{
             while(connection){
                 String message;
-                /*If user has not joined the server,
-                only addUserName() is allowed to
-                perform and other information is
-                not shared with user.
-                 */
 
                 if(!joined){
                     addUserName();
                 }
-                /*
-                Once userName has been accepted, other
-                information like active userList and
-                messages is transmitted.
-                 */
+
                 else{
                     /*
                     If message start with "[" that is
                     arrayList of user and this is
                     added to user List view.
+                    So we are using "[" as a mark
                      */
                     message = dataInputStream.readUTF();
                     if(message.startsWith("[")){
@@ -336,7 +333,7 @@ public class ChatClient extends Application {
                         Platform.runLater(() -> {
                             messageItem.add("***** "+ message + " *****");
                         });
-                    } else if(message.contains(" has left the chat room.")) {
+                    } else if(message.contains(" has left the chat room")) {
                         Platform.runLater(() -> {
                             messageItem.add("xxxxx "+ message + " xxxxx");
                         });
@@ -359,16 +356,11 @@ public class ChatClient extends Application {
         }
     }
 
-
     /*
-    joinChat method allow user to b_send the userName to
-    be approved to the server, as "," is being processed
-    in other code to convert arrayList.toString back to
-    arrayList, this is not allowed as userName. Else, the
-    userName is b_send to the server and error message is
-    handled as so.
+    Checks username in put, avoid duplication and syntax problems
+    If OK send the userName to the server
      */
-    private void joinChat(){
+    private void joinChatUsername(){
         userName = nameInput.getText();
         if(userName.contains(",")){
             Platform.runLater(() -> {
@@ -387,11 +379,8 @@ public class ChatClient extends Application {
         }
     }
 
-
     /*
-    This method recreate an arrayList from the message and
-    add the name to the userListView excluding its own name
-    as it is not useful information.
+    Create Userlist
      */
     private void addMessageToUserListView(String s) {
         List<String> list =
@@ -399,11 +388,12 @@ public class ChatClient extends Application {
                         s.substring(1, s.length() - 1).split(", ")
                 );
         Platform.runLater(() -> {
-            // Update UI here.
             userItems.clear();
             for(int i = 0; i < list.size(); i++){
-                if(!(list.get(i).equals(userName))){
+                if(! (list.get(i).equals(userName))){
                     userItems.add(list.get(i));
+                } else {
+                    userItems.add(list.get(i) + " (You)");
                 }
             }
         });
@@ -411,14 +401,8 @@ public class ChatClient extends Application {
 
 
     /*
-    If the server b_send response to the user and it says accepted,
-    then the status of boolean joined is set to be true and this
-    is updated in errorLabel to show that the user has joined
-    the conversation and the b_join button is disabled and b_send
-    message button is enabled.
-    If it is not accepted, that mean there is userName is in the
-    server arrayList so error message is shown letting user
-    that the user name exist.
+    Check username input, assure no duplication
+    If OK send a green message and allow chat action
      */
     private void addUserName()  {
         String response;
@@ -449,7 +433,7 @@ public class ChatClient extends Application {
             System.out.println("Socket is closed.add");
             Platform.runLater(() -> {
                 errorLabel.setTextFill(Color.RED);
-                errorLabel.setText("Unable to establish connection.");
+                errorLabel.setText("Unable to establish connection");
                 connection = false;
             });
         }
@@ -457,21 +441,14 @@ public class ChatClient extends Application {
 
 
     /*
-    This method b_send message to server by adding name to the message, so
-    that the message can be b_send to all the user in the chat group.
-    Special care has been taken to make sure that the formatting of the
-    multiline text is preserved.
+    Receives message from server and display it
      */
     private void process() {
         try {
-            // Get the text from the text field
             String string = nameInput.getText().trim() + ": " +
                     messageInput.getText().trim();
-
             // Send the text to the server
             dataOutputStream.writeUTF(string);
-
-            // Clear text area.
             messageInput.setText("");
         }
         catch (IOException ex) {
