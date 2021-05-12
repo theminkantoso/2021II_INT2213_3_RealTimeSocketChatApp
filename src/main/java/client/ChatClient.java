@@ -1,4 +1,5 @@
 package client;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -16,54 +17,37 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import server.ChatServer;
-
-import java.awt.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
-
-/*
-    Created by Bikram Shrestha
-    ChatClient class provide the user with GUI to setup
-    connection with the server and communicate with the
-    server to send messages and receive message from
-    other user as well as other relevant information
-    regarding the active userList. Thread has been created
-    to handle receiving message to the server while message
-    is send to the server only when btJoin when userName is
-    not registered to the server and btSend is pressed after
-    userName has been registered to the server.
- */
 public class ChatClient extends Application {
 
-    // Label was created to label different UI components.
-    Label labelName = new Label("Name");
-    Label labelMessages = new Label("Compose ");
-    Label labelReceived = new Label("Messages");
+    /*
+    UI Labels
+     */
+    Label UsernameInput = new Label("Username");
+    Label MessageArea = new Label("Chat Messages");
     Label labelTitle = new Label();
-    Label labelActiveUser = new Label("Active User");
+    Label labelMessages = new Label("User Message ");
+    Label activeUserList = new Label("Active User In System");
     Label errorLabel = new Label("");
 
     /*
-     ArrayList for user and chat message was created
-     so that it can be used to create observable list.
+     List Active Users and messages
      */
     ArrayList<String> userList = new ArrayList<>();
     ArrayList<String> chatMessages = new ArrayList<>();
 
-    // List view for user  and message  was declared.
+    /*
+    List Active Users and messages for GUI purpose
+     */
     ListView<String> userListView = new ListView<String>();
     ListView<String> messageListView = new ListView<String>();
-
-    /*
-     ObservableList for ListView was created using
-     the arrayList of user and chat message.
-     */
     ObservableList<String> userItems =
             FXCollections.observableArrayList (userList);
 
@@ -71,36 +55,48 @@ public class ChatClient extends Application {
             FXCollections.observableArrayList (chatMessages);
 
 
-    // Setting text field for user to enter name and message.
-    TextField tfName = new TextField();
-    TextArea taComposeMessage = new TextArea();
+    /*
+    Text Field for input username and message
+     */
+    TextField nameInput = new TextField();
+    TextArea messageInput = new TextArea();
 
-    // Setting button to join, send and exit the chat.
-    Button btJoin = new Button("Join");
-    Button btSend = new Button("Send");
-    Button btDisconnect = new Button("Exit");
-    Button btFile = new Button("File");
-    // Declaring dataInput and Output streams.
+    /*
+    Buttons on the GUI
+     */
+    Button join = new Button("Join");
+    Button send = new Button("Send");
+    Button exit = new Button("Exit and Disconnect");
+    Button sendFile = new Button("File txt");
+
+    /*
+     IntputStream and OutputStream to communicate with server
+     Output: Send to server
+     Input: Receive from server
+     */
     DataOutputStream dataOutputStream;
     DataInputStream dataInputStream;
 
     /*
-     By default the new user is set to be not jointed or
-     joined = false till it meet the criteria, then the
-     unique user is set to be joined.
+     Check whether user has joined the chatroom
+     By default it set to false, and will be modify later when the join action completed
      */
     boolean joined = false;
 
-    //Socket is declared.
+    /*
+    Client socket init connection
+     */
     private Socket socket;
 
-    // User name is being used in various methods.
     private String userName;
 
+    /*
+    Check server connection
+     */
     private boolean connection = true;
 
 
-    @Override   // Override the start method.
+    @Override
     public void start(Stage primaryStage)  {
 
         // Creating BorderPane to arrange all the node.
@@ -116,13 +112,13 @@ public class ChatClient extends Application {
 
 
         // Setting Prompt for user text field and area.
-        tfName.setPromptText("Enter User Name");
-        taComposeMessage.setPromptText("Enter your Message");
+        nameInput.setPromptText("Enter your username");
+        messageInput.setPromptText("Enter your message");
 
         // Setting size of the compose text area. So, user can send
         // multiline messages.
-        taComposeMessage.setPrefHeight(2*(tfName.getHeight()));
-        taComposeMessage.setPrefWidth(250);
+        messageInput.setPrefHeight(2 * (nameInput.getHeight()));
+        messageInput.setPrefWidth(250);
 
         // Creating GridPane for the Center part of BorderPane.
         GridPane centreGridPane = new GridPane();
@@ -131,10 +127,10 @@ public class ChatClient extends Application {
         centreGridPane.setVgap(10);
 
         // Adding item to the centreGridPane
-        centreGridPane.add(labelName,0,0);
-        centreGridPane.add(tfName,1,0);
-        centreGridPane.add(btJoin,2,0);
-        centreGridPane.add(labelReceived,0,2);
+        centreGridPane.add(UsernameInput,0,0);
+        centreGridPane.add(nameInput,1,0);
+        centreGridPane.add(join,2,0);
+        centreGridPane.add(MessageArea,0,2);
         centreGridPane.add(errorLabel,1,1,2,1);
         centreGridPane.add(messageListView,1,2,2,1);
 
@@ -145,7 +141,7 @@ public class ChatClient extends Application {
         // user and message list view is made uneditable.
         userListView.setEditable(false);
         messageListView.setEditable(false);
-        taComposeMessage.setEditable(false);
+        messageInput.setEditable(false);
         // Setting size of user ListView.
         messageListView.setMinWidth(400);
         userListView.setMaxWidth(180);
@@ -156,20 +152,20 @@ public class ChatClient extends Application {
         VBox rightVBox = new VBox();
         rightVBox.setPadding(new Insets(20,0,10,0));
         rightVBox.setSpacing(10);
-        rightVBox.getChildren().addAll(labelActiveUser,userListView);
+        rightVBox.getChildren().addAll(activeUserList,userListView);
         borderPane.setRight(rightVBox);
 
 
         //Creating and adding note to bottomGridPane.
         GridPane bottomGridPane = new GridPane();
         bottomGridPane.add(labelMessages,0,0);
-        bottomGridPane.add(taComposeMessage,1,0);
-        bottomGridPane.add(btSend,4,0);
-        bottomGridPane.add(btDisconnect,7,0);
-        bottomGridPane.add(btFile,5,0);
+        bottomGridPane.add(messageInput,1,0);
+        bottomGridPane.add(send,4,0);
+        bottomGridPane.add(exit,7,0);
+        bottomGridPane.add(sendFile,5,0);
         bottomGridPane.setHgap(20);
         bottomGridPane.setPadding(new Insets(10,0,10,10));
-        btSend.setAlignment(Pos.BASELINE_RIGHT);
+        send.setAlignment(Pos.BASELINE_RIGHT);
 
         //Adding item to the Top of BorderPane
         borderPane.setTop(labelTitle);
@@ -196,14 +192,14 @@ public class ChatClient extends Application {
          */
         primaryStage.setOnCloseRequest(t -> closeSocketExit());
         //Send is disable until username is accepted.
-        btSend.setDisable(true);
-        btFile.setDisable(true);
+        send.setDisable(true);
+        sendFile.setDisable(true);
 
         // Setting listener for the buttons.
-        btJoin.setOnAction(event -> joinChat());
-        btSend.setOnAction(e -> process());
-        btDisconnect.setOnAction(event -> closeSocketExit());
-        btFile.setOnAction(event-> {
+        join.setOnAction(event -> joinChat());
+        send.setOnAction(e -> process());
+        exit.setOnAction(event -> closeSocketExit());
+        sendFile.setOnAction(event-> {
             try {
                 selectFile();
             } catch (IOException e) {
@@ -212,7 +208,7 @@ public class ChatClient extends Application {
         });
         try {
             // Create a socket to connect to the server
-            socket = new Socket("localhost", ChatServer.SERVER_PORT);
+            socket = new Socket(ChatServer.SERVER_IP, ChatServer.SERVER_PORT);
 
             // Create an input stream to receive data from server.
             dataInputStream =
@@ -283,7 +279,7 @@ public class ChatClient extends Application {
     private void closeSocketExit() {
         try {
             //If socket doesn't exit, no need to close.
-            if(socket!=null){
+            if(socket != null){
                 socket.close();
             }
             Platform.exit();    // Close UI.
@@ -329,6 +325,14 @@ public class ChatClient extends Application {
                     message = dataInputStream.readUTF();
                     if(message.startsWith("[")){
                         addMessageToUserListView(message);
+                    } else if(message.contains(" joined the chat room.")) {
+                        Platform.runLater(() -> {
+                            messageItem.add("***** "+ message + " *****");
+                        });
+                    } else if(message.contains(" has left the chat room.")) {
+                        Platform.runLater(() -> {
+                            messageItem.add("xxxxx "+ message + " xxxxx");
+                        });
                     }
                     else if(!message.equals("")){
                         // Display to the message list view.
@@ -339,10 +343,10 @@ public class ChatClient extends Application {
                 }
             }
         } catch (IOException ex) {
-            System.out.println("Socket is closed.receive");
+            System.out.println("Socket is closed");
             Platform.runLater(() -> {
                 errorLabel.setTextFill(Color.RED);
-                errorLabel.setText("Unable to establish connection.");
+                errorLabel.setText("Unable to establish connection to server");
             });
             connection = false;
         }
@@ -358,7 +362,7 @@ public class ChatClient extends Application {
     handled as so.
      */
     private void joinChat(){
-        userName = tfName.getText();
+        userName = nameInput.getText();
         if(userName.contains(",")){
             Platform.runLater(() -> {
                 // Update UI here.
@@ -417,11 +421,11 @@ public class ChatClient extends Application {
                 joined = true;
                 Platform.runLater(() -> {
                     System.out.println("User Connected as "+ userName);
-                    btSend.setDisable(false);
-                    btJoin.setDisable(true);
-                    btFile.setDisable(false);
-                    tfName.setEditable(false);
-                    taComposeMessage.setEditable(true);
+                    send.setDisable(false);
+                    join.setDisable(true);
+                    sendFile.setDisable(false);
+                    nameInput.setEditable(false);
+                    messageInput.setEditable(true);
                     errorLabel.setTextFill(Color.GREEN);
                     errorLabel.setText("Joined as " + userName);
                 });
@@ -429,7 +433,7 @@ public class ChatClient extends Application {
             else if(response.equals(userName)){
                 Platform.runLater(() -> {
                     // Update UI here.
-                    tfName.clear();
+                    nameInput.clear();
                     errorLabel.setTextFill(Color.RED);
                     errorLabel.setText("User with same name exist.");
                 });
@@ -454,14 +458,14 @@ public class ChatClient extends Application {
     private void process() {
         try {
             // Get the text from the text field
-            String string = tfName.getText().trim() + ": " +
-                    taComposeMessage.getText().trim();
+            String string = nameInput.getText().trim() + ": " +
+                    messageInput.getText().trim();
 
             // Send the text to the server
             dataOutputStream.writeUTF(string);
 
             // Clear text area.
-            taComposeMessage.setText("");
+            messageInput.setText("");
         }
         catch (IOException ex) {
             System.err.println(ex);

@@ -15,28 +15,10 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
-
-/*
-    Created by Bikram Shrestha
-    ChatServer class provide a GUI for the user to see
-    the various connection that is been established as
-    well as current active user list. This is performed
-    with the help of multi threading, The server listen
-    for connection from client continuously and create
-    a new thread to handle the communication with the
-    connected socket.
-    When the user try to connect to the server for the
-    first time, as client side can only send the userName,
-    it is checked whether there is user with same name in
-     the userList maintained in server side and if the
-     user name is unique, an accepted message is send to
-     the client and client is then only allow to receive
-     message and active userList.
- */
 public class ChatServer extends Application {
 
     public static final int SERVER_PORT = 8000;
-    public static final int FILE_PORT = 8001;
+    public static final String SERVER_IP = "localhost";
 
     public static ArrayList<MyFile> files = new ArrayList<>();
     // Label was create to label logList and userList.
@@ -196,7 +178,7 @@ public class ChatServer extends Application {
 
 
     // This method send onlineStatus to all the user excluding self.
-    void sendOnlineStatus(Socket socket,String message){
+    void sendOnlineStatus(Socket socket, String message){
         for (Enumeration e = getOutputStreams(); e.hasMoreElements();){
             DataOutputStream dataOutputStream = (DataOutputStream)e.nextElement();
             try {
@@ -263,7 +245,7 @@ public class ChatServer extends Application {
                             String userNotification = userName + " joined the chat room.";
                             Platform.runLater(() ->
                                     logItems.add(userName + " joined the chat room."));
-                            server.sendOnlineStatus(socket,userNotification);
+                            server.sendOnlineStatus(socket, userNotification);
                             userItems.clear();
                             userItems.addAll(userList);
                         }
