@@ -15,6 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import server.ChatServer;
@@ -23,18 +24,17 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 public class ChatClient extends Application {
 
     /*
     UI Labels
      */
-    Label UsernameInput = new Label("Username");
-    Label MessageArea = new Label("Chat Messages");
-    Label labelTitle = new Label();
-    Label labelMessages = new Label("User Message ");
-    Label activeUserList = new Label("Active User In System");
+    Label l_usernameInput = new Label("Username");
+    Label l_messageArea = new Label("Chat Messages");
+    Label l_labelTitle = new Label();
+    Label l_labelMessages = new Label("User Message ");
+    Label l_activeUserList = new Label("Active User In System");
     Label errorLabel = new Label("");
 
     /*
@@ -64,10 +64,10 @@ public class ChatClient extends Application {
     /*
     Buttons on the GUI
      */
-    Button join = new Button("Join");
-    Button send = new Button("Send");
-    Button exit = new Button("Exit and Disconnect");
-    Button sendFile = new Button("File txt");
+    Button b_join = new Button("Join");
+    Button b_send = new Button("Send");
+    Button b_exit = new Button("Exit and Disconnect");
+    Button b_sendFile = new Button("File txt");
 
     /*
      IntputStream and OutputStream to communicate with server
@@ -79,7 +79,7 @@ public class ChatClient extends Application {
 
     /*
      Check whether user has joined the chatroom
-     By default it set to false, and will be modify later when the join action completed
+     By default it set to false, and will be modify later when the b_join action completed
      */
     boolean joined = false;
 
@@ -99,23 +99,23 @@ public class ChatClient extends Application {
     @Override
     public void start(Stage primaryStage)  {
 
-        // Creating BorderPane to arrange all the node.
+        /*
+        These all serving GUI purpose
+         */
         BorderPane borderPane = new BorderPane();
         borderPane.setPadding(new Insets(10));
 
-        //Setting Title of the application
-        Font titleFont = new Font("Times New Roman",20);
-        labelTitle.setText("Welcome to Anonymous Chat Application");
-        labelTitle.setFont(titleFont);
-        Color titleColor = new Color(0.1, 0, 0.5,1);
-        labelTitle.setTextFill(titleColor);
+        l_labelTitle.setText("Real Time Chat App Room");
+        l_labelTitle.setFont(Font.font("Times New Roman", FontWeight.BOLD, 30));
+        Color titleColor = Color.web("#ca09e8");
+        l_labelTitle.setTextFill(titleColor);
 
 
         // Setting Prompt for user text field and area.
         nameInput.setPromptText("Enter your username");
         messageInput.setPromptText("Enter your message");
 
-        // Setting size of the compose text area. So, user can send
+        // Setting size of the compose text area. So, user can b_send
         // multiline messages.
         messageInput.setPrefHeight(2 * (nameInput.getHeight()));
         messageInput.setPrefWidth(250);
@@ -125,12 +125,18 @@ public class ChatClient extends Application {
         centreGridPane.setPadding(new Insets(10));
         centreGridPane.setHgap(20);
         centreGridPane.setVgap(10);
+        //Change font
+        Font labelFonts = Font.font("Times New Roman", FontWeight.BOLD, 15);
+        l_usernameInput.setFont(labelFonts);
+        l_messageArea.setFont(labelFonts);
+        l_labelMessages.setFont(labelFonts);
+        l_activeUserList.setFont(labelFonts);
 
         // Adding item to the centreGridPane
-        centreGridPane.add(UsernameInput,0,0);
+        centreGridPane.add(l_usernameInput,0,0);
         centreGridPane.add(nameInput,1,0);
-        centreGridPane.add(join,2,0);
-        centreGridPane.add(MessageArea,0,2);
+        centreGridPane.add(b_join,2,0);
+        centreGridPane.add(l_messageArea,0,2);
         centreGridPane.add(errorLabel,1,1,2,1);
         centreGridPane.add(messageListView,1,2,2,1);
 
@@ -152,24 +158,24 @@ public class ChatClient extends Application {
         VBox rightVBox = new VBox();
         rightVBox.setPadding(new Insets(20,0,10,0));
         rightVBox.setSpacing(10);
-        rightVBox.getChildren().addAll(activeUserList,userListView);
+        rightVBox.getChildren().addAll(l_activeUserList,userListView);
         borderPane.setRight(rightVBox);
 
 
         //Creating and adding note to bottomGridPane.
         GridPane bottomGridPane = new GridPane();
-        bottomGridPane.add(labelMessages,0,0);
+        bottomGridPane.add(l_labelMessages,0,0);
         bottomGridPane.add(messageInput,1,0);
-        bottomGridPane.add(send,4,0);
-        bottomGridPane.add(exit,7,0);
-        bottomGridPane.add(sendFile,5,0);
+        bottomGridPane.add(b_send,4,0);
+        bottomGridPane.add(b_exit,7,0);
+        bottomGridPane.add(b_sendFile,5,0);
         bottomGridPane.setHgap(20);
         bottomGridPane.setPadding(new Insets(10,0,10,10));
-        send.setAlignment(Pos.BASELINE_RIGHT);
+        b_send.setAlignment(Pos.BASELINE_RIGHT);
 
         //Adding item to the Top of BorderPane
-        borderPane.setTop(labelTitle);
-        borderPane.setAlignment(labelTitle,Pos.CENTER);
+        borderPane.setTop(l_labelTitle);
+        borderPane.setAlignment(l_labelTitle,Pos.CENTER);
 
         //Adding item to the Center of BorderPane
         borderPane.setCenter(centreGridPane);
@@ -192,14 +198,14 @@ public class ChatClient extends Application {
          */
         primaryStage.setOnCloseRequest(t -> closeSocketExit());
         //Send is disable until username is accepted.
-        send.setDisable(true);
-        sendFile.setDisable(true);
+        b_send.setDisable(true);
+        b_sendFile.setDisable(true);
 
         // Setting listener for the buttons.
-        join.setOnAction(event -> joinChat());
-        send.setOnAction(e -> process());
-        exit.setOnAction(event -> closeSocketExit());
-        sendFile.setOnAction(event-> {
+        b_join.setOnAction(event -> joinChat());
+        b_send.setOnAction(e -> process());
+        b_exit.setOnAction(event -> closeSocketExit());
+        b_sendFile.setOnAction(event-> {
             try {
                 selectFile();
             } catch (IOException e) {
@@ -214,7 +220,7 @@ public class ChatClient extends Application {
             dataInputStream =
                     new DataInputStream(socket.getInputStream());
 
-            // Create an output stream to send data to the server
+            // Create an output stream to b_send data to the server
             dataOutputStream =
                     new DataOutputStream(socket.getOutputStream());
 
@@ -245,11 +251,11 @@ public class ChatClient extends Application {
 
             FileInputStream fileInputStreamFile = new FileInputStream(file.getAbsolutePath());
 
-            // Get the name of the file you want to send and store it in filename.
+            // Get the name of the file you want to b_send and store it in filename.
 
             // Convert the name of the file into an array of bytes to be sent to the server.
             byte[] fileNameBytes = file.getName().getBytes();
-            // Create a byte array the size of the file so don't send too little or too much data to the server.
+            // Create a byte array the size of the file so don't b_send too little or too much data to the server.
             byte[] fileBytes = new byte[(int) file.length()];
             // Put the contents of the file into the array of bytes to be sent so these bytes can be sent to the server.
             fileInputStreamFile.read(fileBytes);
@@ -278,7 +284,7 @@ public class ChatClient extends Application {
      */
     private void closeSocketExit() {
         try {
-            //If socket doesn't exit, no need to close.
+            //If socket doesn't b_exit, no need to close.
             if(socket != null){
                 socket.close();
             }
@@ -354,11 +360,11 @@ public class ChatClient extends Application {
 
 
     /*
-    joinChat method allow user to send the userName to
+    joinChat method allow user to b_send the userName to
     be approved to the server, as "," is being processed
     in other code to convert arrayList.toString back to
     arrayList, this is not allowed as userName. Else, the
-    userName is send to the server and error message is
+    userName is b_send to the server and error message is
     handled as so.
      */
     private void joinChat(){
@@ -404,10 +410,10 @@ public class ChatClient extends Application {
 
 
     /*
-    If the server send response to the user and it says accepted,
+    If the server b_send response to the user and it says accepted,
     then the status of boolean joined is set to be true and this
     is updated in errorLabel to show that the user has joined
-    the conversation and the join button is disabled and send
+    the conversation and the b_join button is disabled and b_send
     message button is enabled.
     If it is not accepted, that mean there is userName is in the
     server arrayList so error message is shown letting user
@@ -421,9 +427,9 @@ public class ChatClient extends Application {
                 joined = true;
                 Platform.runLater(() -> {
                     System.out.println("User Connected as "+ userName);
-                    send.setDisable(false);
-                    join.setDisable(true);
-                    sendFile.setDisable(false);
+                    b_send.setDisable(false);
+                    b_join.setDisable(true);
+                    b_sendFile.setDisable(false);
                     nameInput.setEditable(false);
                     messageInput.setEditable(true);
                     errorLabel.setTextFill(Color.GREEN);
@@ -450,8 +456,8 @@ public class ChatClient extends Application {
 
 
     /*
-    This method send message to server by adding name to the message, so
-    that the message can be send to all the user in the chat group.
+    This method b_send message to server by adding name to the message, so
+    that the message can be b_send to all the user in the chat group.
     Special care has been taken to make sure that the formatting of the
     multiline text is preserved.
      */
