@@ -176,7 +176,7 @@ public class ChatClient extends Application {
 
         //Adding item to the Top of BorderPane
         borderPane.setTop(l_labelTitle);
-        borderPane.setAlignment(l_labelTitle,Pos.CENTER);
+        borderPane.setAlignment(l_labelTitle, Pos.CENTER);
 
         //Adding item to the Center of BorderPane
         borderPane.setCenter(centreGridPane);
