@@ -142,6 +142,10 @@ public class ChatClient extends Application {
 
         //Setting content to display for the ListVIew
         messageListView.setItems(messageItem);
+        userListView.setStyle("-fx-font-weight: bold;" +
+                "-fx-background-color : #113ff5;" +
+                "-fx-text-fill: #ffffff;"
+                );
         userListView.setItems(userItems);
 
         // user and message list view is made uneditable.
