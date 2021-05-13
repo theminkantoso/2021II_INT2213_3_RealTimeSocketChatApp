@@ -200,9 +200,8 @@ public class ChatServer extends Application {
         private ChatServer server;
         private Socket socket;
         String userName;
-        boolean userJoined; 
+        boolean userJoined;
 
-        /** Construct a thread */
         public ServerThread(ChatServer server, Socket socket) {
             this.socket = socket;
             this.server = server;
@@ -210,22 +209,16 @@ public class ChatServer extends Application {
         }
 
         @Override
-        /** Run a thread */
         public void run() {
             try {
-                // Create data input and output streams
-                DataInputStream dataInputStream =
-                        new DataInputStream(socket.getInputStream());
-                DataOutputStream dataOutputStream =
-                        new DataOutputStream(socket.getOutputStream());
+                DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+                DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-                // Continuously serve the client
                 while (true) {
                     /*
-                    When user connect to the server for first time, as it
-                    can only send userName, the userName is checked against
-                    the userList to make sure only one user with the same
-                    name exist, and approve message is send if approved.
+                    Check if already joined
+                    1. if not then add them
+                    2. if already joined then broadcast the message from server to all users
                     */
                     if(!userJoined){
                         userName = dataInputStream.readUTF();
@@ -248,25 +241,20 @@ public class ChatServer extends Application {
                         }
                     }
                      /*
-                    Once it join it can receive the message from the other
-                    user in broadcast mode.
+                    Handle the already joined scenario, including broadcasting the message to all clients
                     */
                     else if(userJoined){
-                        // User Message
                         String string = dataInputStream.readUTF();
                         System.out.println(string);
 
-                        // Send text back to the clients
                         server.sendToAll(string);
                         server.updateUserlist();
 
-                        // Add chat to the server jta
                         Platform.runLater(() -> logItems.add(string));
 
                     }
                 }
             }
-
 
             /*
             When ever Exception is thrown due to closed socket, this is
@@ -296,73 +284,6 @@ public class ChatServer extends Application {
                     userItems.addAll(userList);
                 });
             }
-        }
-    }
-
-    public class FileThread extends Thread{
-        private ChatServer server;
-        private Socket socket;
-
-
-        /** Construct a thread */
-        public FileThread(ChatServer server, Socket socket) {
-            this.socket = socket;
-            this.server = server;
-            start();
-        }
-
-        @Override
-        /** Run a thread */
-        public void run() {
-            try {
-                // Create data input and output streams
-                DataInputStream dataInputStream =
-                        new DataInputStream(socket.getInputStream());
-
-                // Continuously serve the client
-                while (true) {
-                    /*
-                    When user connect to the server for first time, as it
-                    can only send userName, the userName is checked against
-                    the userList to make sure only one user with the same
-                    name exist, and approve message is send if approved.
-                    */
-                    try {
-                        int fileNameLength = dataInputStream.readInt();
-                        System.out.println(fileNameLength);
-                        if(fileNameLength > 0) {
-                            byte[] fileNameBytes = new byte[fileNameLength];
-                            dataInputStream.readFully(fileNameBytes, 0, fileNameBytes.length);
-                            String fileName = new String(fileNameBytes);
-                            int fileContentLength = dataInputStream.readInt();
-                            if(fileContentLength > 0) {
-                                byte[] fileContentBytes = new byte[fileContentLength];
-                                dataInputStream.readFully(fileContentBytes, 0, fileContentLength);
-                                server.sendFileToAll(fileNameLength, fileNameBytes, fileContentLength, fileContentBytes);
-                            }
-
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    private void sendFileToAll(int fileNameLength, byte[] fileNameBytes, int fileContentLength, byte[] fileContentBytes){
-        // Go through hashtable and send message to each output stream
-        for (Enumeration e = getOutputStreams(); e.hasMoreElements();){
-            DataOutputStream dout = (DataOutputStream)e.nextElement();
-//            try {
-//                // Write message
-////                dout.writeUTF(message);
-//            }
-//            catch (IOException ex) {
-//                ex.printStackTrace();
-//            }
         }
     }
 }
