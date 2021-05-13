@@ -1,6 +1,5 @@
 package server;
 
-import java.awt.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -21,45 +20,53 @@ public class ChatServer extends Application {
     public static final String SERVER_IP = "localhost";
 
     public static ArrayList<MyFile> files = new ArrayList<>();
-    // Label was create to label logList and userList.
+    /*
+    GUI labels
+     */
     Label lbLog = new Label("Log");
     Label lbUserList = new Label("Active User");
 
     /*
-     ArrayList for user and chat message was created
-     so that it can be used to create observable list.
+     Store information for display purpose
      */
     private ArrayList<String> logList = new ArrayList<>();
     private ArrayList<String> userList = new ArrayList<>();
 
-    // List view for log  and user  was declared.
+    /*
+     Display information to GUI
+     */
     ListView<String> logListView = new ListView<String>();
     ListView<String> userListView = new ListView<String>();
 
-    /*
-     ObservableList for ListView was created using
-     the arrayList of log and user list.
-     */
     ObservableList<String> logItems =
             FXCollections.observableArrayList (logList);
     ObservableList<String> userItems =
             FXCollections.observableArrayList (userList);
 
-    // Mapping of sockets to output streams
+    /*
+     Mapping of sockets to output streams
+     */
     private Hashtable outputStreams = new Hashtable();
-    //ArrayList of all open Socket.
+    /*
+    All open Socket.
+     */
     private ArrayList<Socket> socketList = new ArrayList<>();
-    // Server socket
+
     private ServerSocket serverSocket;
 
-    @Override // Override the start method in the Application class
+    @Override
     public void start(Stage primaryStage) {
 
-        //Setting content to display for the ListVIew
+        /*
+        Setting content to display for the ListVIew
+         */
         userListView.setItems(userItems);
         logListView.setItems(logItems);
         logListView.setMinWidth(430);
 
+        /*
+        GUI part
+         */
         // Creating GridPane to arrange all the node.
         GridPane gridPane = new GridPane();
         gridPane.setPadding(new Insets(10));
@@ -69,15 +76,14 @@ public class ChatServer extends Application {
         gridPane.add(logListView,0,1);
         gridPane.add(lbUserList,0,2);
         gridPane.add(userListView,0,3);
+
         // Create a scene and place it in the stage
         Scene scene = new Scene(gridPane, 450, 400);
-        primaryStage.setTitle("Server"); // Set the stage title
-        primaryStage.setScene(scene); // Place the scene in the stage
-        primaryStage.show(); // Display the stage
+        primaryStage.setTitle("Server GUI");
+        primaryStage.setScene(scene);
+        primaryStage.show();
         /*
-        Special care is taken to make sure that all the connection
-        to the client is been closed properly before closing the
-        application.
+        Ensure to close all socket when close GUI
          */
         primaryStage.setOnCloseRequest(t -> closeSocketExit());
 
@@ -85,21 +91,17 @@ public class ChatServer extends Application {
         new Thread(() -> listen()).start();
     }
 
-
     /*
-    When this method is called, it make sure that all the
-    open socket, or connection to the client is terminated
-    properly.
+    Close all existing sockets
      */
     private void closeSocketExit() {
         try {
             for(Socket socket : socketList){
-                //If socket doesn't exit, no need to close.
                 if(socket != null) {
                     socket.close();
                 }
             }
-            Platform.exit();    // Close UI.
+            Platform.exit();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -107,40 +109,36 @@ public class ChatServer extends Application {
 
 
     /*
-    This thread create a new serverSocket using the port 8000
-    and wait for user to connect. This is done in a loop so
-    that this server will be waiting and creating a new
-    connection as user join the server.
+   Server started and wait for connection request from clients
+   Then accept request, add that socket connection store it in the arraylist
+   Then create a new thread to handle that socket connection
      */
     private void listen() {
         try {
-            // Create a server socket
+            /*
+             Create a server socket, starts listening
+             */
             serverSocket = new ServerSocket(SERVER_PORT);
             Platform.runLater(() ->
                     logItems.add("MultiThreadServer started at " + new Date()));
 
-            while (true) {// Listen for a new connection request
+            while (true) {
                 Socket socket = serverSocket.accept();
-//                Socket socketFile = serverSocketFile.accept();
-                //Add accepted socket to the socketList.
+
+                /*
+                Add accepted socket to the socketList.
+                 */
                 socketList.add(socket);
-//                socketListFile.add(socketFile);
-                // Display the client socket information and time connected.
+
                 Platform.runLater(() ->
                         logItems.add("Connection from " + socket + " at " + new Date()));
 
-                // Create output stream
-                DataOutputStream dataOutputStream =
-                        new DataOutputStream(socket.getOutputStream());
-//                DataOutputStream dataOutputStreamFile =
-//                        new DataOutputStream(socketFile.getOutputStream());
+                DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
                 // Save output stream to hashtable
                 outputStreams.put(socket, dataOutputStream);
-//                outputStreamsFiles.put(socketFile, dataOutputStreamFile);
-                // Create a new thread for the connection
+
                 new ServerThread(this, socket);
-//                new FileThread(this, socketFile);
             }
         }
         catch(IOException ex) {
@@ -148,26 +146,28 @@ public class ChatServer extends Application {
         }
     }
 
-
-    // This method dispatch userList to all user in the server.
-    private void dispatchUserList() {
+    /*
+     Update userlist to all user in the server.
+     */
+    private void updateUserlist() {
         this.sendToAll(userList.toString());
     }
-
 
     // Used to get the output streams
     Enumeration getOutputStreams(){
         return outputStreams.elements();
     }
 
-
-    // Used to send message to all clients
+    /*
+    Send message to all clients
+     */
     void sendToAll(String message){
-        // Go through hashtable and send message to each output stream
+        /*
+         Go through hashtable and send message to each output stream
+         */
         for (Enumeration e = getOutputStreams(); e.hasMoreElements();){
             DataOutputStream dout = (DataOutputStream)e.nextElement();
             try {
-                // Write message
                 dout.writeUTF(message);
             }
             catch (IOException ex) {
@@ -176,13 +176,13 @@ public class ChatServer extends Application {
         }
     }
 
-
-    // This method send onlineStatus to all the user excluding self.
-    void sendOnlineStatus(Socket socket, String message){
+    /*
+     This method send all people in the chatroom to all the user excluding self.
+     */
+    void sendUsersInSystem(Socket socket, String message){
         for (Enumeration e = getOutputStreams(); e.hasMoreElements();){
             DataOutputStream dataOutputStream = (DataOutputStream)e.nextElement();
             try {
-                //If it is same socket then don't send the message.
                 if(!(outputStreams.get(socket) == dataOutputStream)){
                     // Write message
                     dataOutputStream.writeUTF(message);
@@ -193,17 +193,14 @@ public class ChatServer extends Application {
         }
     }
 
-
     /*
-    Declaring a ServerThread class so that it can be
-    used to create a multi-thread server serving
-    a each socket in different thread.
+    Class Thread handle each connection from client
      */
     public class ServerThread extends Thread {
         private ChatServer server;
         private Socket socket;
-        String userName;    // Default null;
-        boolean userJoined; // Default false;
+        String userName;
+        boolean userJoined; 
 
         /** Construct a thread */
         public ServerThread(ChatServer server, Socket socket) {
@@ -239,13 +236,13 @@ public class ChatServer extends Application {
                         else{
                             userList.add(userName);
                             dataOutputStream.writeUTF("Accepted");
-                            server.dispatchUserList();
+                            server.updateUserlist();
                             System.out.println(userName +" joined the chat room");
                             userJoined = true;
                             String userNotification = userName + " joined the chat room.";
                             Platform.runLater(() ->
                                     logItems.add(userName + " joined the chat room."));
-                            server.sendOnlineStatus(socket, userNotification);
+                            server.sendUsersInSystem(socket, userNotification);
                             userItems.clear();
                             userItems.addAll(userList);
                         }
@@ -258,33 +255,14 @@ public class ChatServer extends Application {
                         // User Message
                         String string = dataInputStream.readUTF();
                         System.out.println(string);
-                        if(!string.equals("@#$%^&*())")) {
 
-                            // Send text back to the clients
-                            server.sendToAll(string);
-                            server.dispatchUserList();
+                        // Send text back to the clients
+                        server.sendToAll(string);
+                        server.updateUserlist();
 
-                            // Add chat to the server jta
-                            Platform.runLater(() -> logItems.add(string));
-                        } else {
-                            try {
-                                int fileNameLength = dataInputStream.readInt();
-                                System.out.println(124);
-                                if(fileNameLength > 0) {
-                                    byte[] fileNameBytes = new byte[fileNameLength];
-                                    dataInputStream.readFully(fileNameBytes, 0, fileNameBytes.length);
-                                    String fileName = new String(fileNameBytes);
-                                    int fileContentLength = dataInputStream.readInt();
-                                    if(fileContentLength > 0) {
-                                        byte[] fileContentBytes = new byte[fileContentLength];
-                                        dataInputStream.readFully(fileContentBytes, 0, fileContentLength);
-                                        server.sendFileToAll(fileNameLength, fileNameBytes, fileContentLength, fileContentBytes);
-                                    }
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
+                        // Add chat to the server jta
+                        Platform.runLater(() -> logItems.add(string));
+
                     }
                 }
             }
@@ -309,7 +287,7 @@ public class ChatServer extends Application {
                     userList.remove(userName);
                 }
                 outputStreams.remove(socket);
-                server.dispatchUserList();
+                server.updateUserlist();
                 if (!userName.equals(null)){
                     server.sendToAll(userName + " has left the chat room.");
                 }
