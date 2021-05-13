@@ -104,7 +104,7 @@ public class ChatClient extends Application {
          */
         BorderPane borderPane = new BorderPane();
         borderPane.setPadding(new Insets(10));
-        borderPane.setStyle("-fx-background-color: #F5F5DC");
+        borderPane.setStyle("-fx-background-color: #8288fa");
 
         l_labelTitle.setText("Chatroom Application");
         l_labelTitle.setFont(Font.font("Times New Roman", FontWeight.BOLD, 35));
@@ -190,7 +190,7 @@ public class ChatClient extends Application {
         //Creating new scene and placing borderPane.
         Scene scene = new Scene(borderPane,750,400);
         primaryStage.setScene(scene); //Setting scene.
-        primaryStage.setTitle("Anonymous Chat"); //Setting title.
+        primaryStage.setTitle("Realtime Chat App"); //Setting title.
         primaryStage.setResizable(false);
         primaryStage.show();    //Display Stage.
 
@@ -229,6 +229,14 @@ public class ChatClient extends Application {
             errorLabel.setText("Unable to establish connection");
             System.err.println("Connection refused");
         }
+        /*
+        Set color for buttons
+         */
+        b_join.setStyle("-fx-text-fill: black; -fx-background-color: #38ff2e;");
+        b_join.setOnMouseEntered(e-> b_join.setStyle("-fx-text-fill: #38ff2e;"));
+        b_join.setOnMouseExited(e-> b_join.setStyle("-fx-text-fill: black; -fx-background-color: #38ff2e;"));
+        b_exit.setOnMouseEntered(e-> b_exit.setStyle("-fx-text-fill: white; -fx-background-color: red;"));
+        b_exit.setOnMouseExited(e-> b_exit.setStyle("-fx-text-fill: white; -fx-background-color: red;"));
     }
 
     private void selectFile() throws IOException {

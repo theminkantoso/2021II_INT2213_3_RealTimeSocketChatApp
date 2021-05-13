@@ -12,6 +12,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 public class ChatServer extends Application {
@@ -24,7 +27,7 @@ public class ChatServer extends Application {
     GUI labels
      */
     Label lbLog = new Label("Log");
-    Label lbUserList = new Label("Active User");
+    Label lbUserList = new Label("Active User in system");
 
     /*
      Store information for display purpose
@@ -70,7 +73,7 @@ public class ChatServer extends Application {
         // Creating GridPane to arrange all the node.
         GridPane gridPane = new GridPane();
         gridPane.setPadding(new Insets(10));
-
+        gridPane.setStyle("-fx-background-color: #f207fa");
         //All the nodes are added to the gridPane.
         gridPane.add(lbLog,0,0);
         gridPane.add(logListView,0,1);
@@ -81,7 +84,15 @@ public class ChatServer extends Application {
         Scene scene = new Scene(gridPane, 450, 400);
         primaryStage.setTitle("Server GUI");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
         primaryStage.show();
+        /*
+        Font
+         */
+        lbLog.setFont(Font.font("Times New Roman", FontWeight.BOLD, FontPosture.ITALIC, 20));
+        lbLog.setStyle("-fx-text-fill: white");
+        lbUserList.setFont(Font.font("Times New Roman", FontWeight.BOLD, FontPosture.ITALIC, 20));
+        lbUserList.setStyle("-fx-text-fill: white");
         /*
         Ensure to close all socket when close GUI
          */
