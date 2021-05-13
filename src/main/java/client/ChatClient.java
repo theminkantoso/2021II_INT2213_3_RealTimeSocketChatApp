@@ -235,8 +235,18 @@ public class ChatClient extends Application {
         b_join.setStyle("-fx-text-fill: black; -fx-background-color: #38ff2e;");
         b_join.setOnMouseEntered(e-> b_join.setStyle("-fx-text-fill: #38ff2e;"));
         b_join.setOnMouseExited(e-> b_join.setStyle("-fx-text-fill: black; -fx-background-color: #38ff2e;"));
+
+        b_send.setStyle("-fx-text-fill: black; -fx-background-color: #38ff2e;");
+        b_send.setOnMouseEntered(e-> b_send.setStyle("-fx-text-fill: #38ff2e; -fx-background-color: #d5ff2e"));
+        b_send.setOnMouseExited(e-> b_send.setStyle("-fx-text-fill: black; -fx-background-color: #38ff2e;"));
+
+        b_sendFile.setStyle("-fx-text-fill: #2e5bff");
+        b_sendFile.setOnMouseEntered(e-> b_sendFile.setStyle("-fx-text-fill: white; -fx-background-color: #2e5bff"));
+        b_sendFile.setOnMouseExited(e-> b_sendFile.setStyle("-fx-text-fill: #2e5bff"));
+
+        b_exit.setStyle("-fx-text-fill: red");
         b_exit.setOnMouseEntered(e-> b_exit.setStyle("-fx-text-fill: white; -fx-background-color: red;"));
-        b_exit.setOnMouseExited(e-> b_exit.setStyle("-fx-text-fill: white; -fx-background-color: red;"));
+        b_exit.setOnMouseExited(e-> b_exit.setStyle("-fx-text-fill: red"));
     }
 
     private void selectFile() throws IOException {
