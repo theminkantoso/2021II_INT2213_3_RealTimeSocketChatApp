@@ -255,15 +255,11 @@ public class ChatServer extends Application {
                     }
                 }
             }
-
             /*
-            When ever Exception is thrown due to closed socket, this is
-            handled properly so that further error does not occurs due
-            to non existence socket. The user is also removed from the
-            userList if it was able to register successfully before changing
-            the default value of null to userName. And relevant message is
-            broadcast to other user letting them know that the user has
-            left the chat due to closed socket.
+           Avoid any problem, when socket related problem occured, this program
+           will close the connection to avoid affecting the entire system.
+           This code include removing to avoid system corrupt, and procedure to properly
+           close connection like exit function
              */
             catch(IOException ex) {
                 System.out.println("Connection Closed for " + userName);
@@ -271,12 +267,12 @@ public class ChatServer extends Application {
                 Platform.runLater(() ->
                         logItems.add("Connection Closed for " + userName));
 
-                if(!userName.equals(null)){
+                if( !userName.equals(null)){
                     userList.remove(userName);
                 }
                 outputStreams.remove(socket);
                 server.updateUserlist();
-                if (!userName.equals(null)){
+                if ( !userName.equals(null)){
                     server.sendToAll(userName + " has left the chat room.");
                 }
                 Platform.runLater(() ->{
