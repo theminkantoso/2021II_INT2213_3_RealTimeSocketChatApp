@@ -132,23 +132,16 @@ public class ChatServer extends Application {
             serverSocket = new ServerSocket(SERVER_PORT);
             Platform.runLater(() ->
                     logItems.add("MultiThreadServer started at " + new Date()));
-
             while (true) {
                 Socket socket = serverSocket.accept();
-
                 /*
                 Add accepted socket to the socketList.
                  */
                 socketList.add(socket);
-
-                Platform.runLater(() ->
-                        logItems.add("Connection from " + socket + " at " + new Date()));
-
+                Platform.runLater(() -> logItems.add("Connection from " + socket + " at " + new Date()));
                 DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-
                 // Save output stream to hashtable
                 outputStreams.put(socket, dataOutputStream);
-
                 new ServerThread(this, socket);
             }
         }
