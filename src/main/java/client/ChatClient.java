@@ -104,7 +104,7 @@ public class ChatClient extends Application {
          */
         BorderPane borderPane = new BorderPane();
         borderPane.setPadding(new Insets(10));
-        borderPane.setStyle("-fx-background-color: #8288fa");
+        borderPane.setStyle("-fx-background-color: #a791ff");
 
         l_labelTitle.setText("Chatroom Application");
         l_labelTitle.setFont(Font.font("Times New Roman", FontWeight.BOLD, 35));
@@ -390,7 +390,7 @@ public class ChatClient extends Application {
                 errorLabel.setText("Cannot contain ','.");
             });
         }
-        else{
+        else if(!userName.equals("")){
             try {
                 dataOutputStream.writeUTF(userName);
             }
