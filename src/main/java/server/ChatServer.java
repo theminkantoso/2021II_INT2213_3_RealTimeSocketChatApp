@@ -217,7 +217,6 @@ public class ChatServer extends Application {
             try {
                 DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
                 DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-
                 while (true) {
                     /*
                     Check if already joined

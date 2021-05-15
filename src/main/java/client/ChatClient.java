@@ -339,7 +339,6 @@ public class ChatClient extends Application {
                 if(!joined){
                     addUserName();
                 }
-
                 else{
                     /*
                     If message start with "[" that is
